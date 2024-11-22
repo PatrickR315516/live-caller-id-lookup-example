@@ -24,9 +24,14 @@ struct ServerConfiguration: Codable {
         let shardCount: Int
         let versionCount: Int?
     }
+    
+    struct User: Codable {
+        let tier: UserTier
+        let tokens: [String]
+    }
 
     let issuerRequestUri: String?
-    let users: [UserTier: [String]]
+    let users: [User]
     let usecases: [Usecase]
 }
 
@@ -71,17 +76,18 @@ actor ReloadService: Service {
         let config = try JSONDecoder().decode(ServerConfiguration.self, from: configData)
 
         var allowedUsers: [String: UserTier] = [:]
-        for (tier, users) in config.users {
-            for user in users {
-                if let existingTier = allowedUsers[user],
+        for user in config.users {
+            for token in user.tokens {
+                let tier = user.tier
+                if let existingTier = allowedUsers[token],
                    existingTier != tier
                 {
                     logger.warning("""
-                        User token '\(user)' is assigned to multiple tiers '\(existingTier)' \
+                        User token '\(token)' is assigned to multiple tiers '\(existingTier)' \
                         and '\(tier)', using the latter.
                         """)
                 }
-                allowedUsers[user] = tier
+                allowedUsers[token] = tier
             }
         }
         await privacyPassState.userAuthenticator.update(allowList: allowedUsers)

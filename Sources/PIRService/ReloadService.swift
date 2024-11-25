@@ -25,13 +25,13 @@ struct ServerConfiguration: Codable {
         let versionCount: Int?
     }
     
-    struct User: Codable {
+    struct UserGroup: Codable {
         let tier: UserTier
         let tokens: [String]
     }
 
     let issuerRequestUri: String?
-    let users: [User]
+    let users: [UserGroup]
     let usecases: [Usecase]
 }
 
@@ -76,9 +76,9 @@ actor ReloadService: Service {
         let config = try JSONDecoder().decode(ServerConfiguration.self, from: configData)
 
         var allowedUsers: [String: UserTier] = [:]
-        for user in config.users {
-            for token in user.tokens {
-                let tier = user.tier
+        for usergroup in config.users {
+            for token in usergroup.tokens {
+                let tier = usergroup.tier
                 if let existingTier = allowedUsers[token],
                    existingTier != tier
                 {

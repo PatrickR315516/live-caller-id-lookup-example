@@ -76,7 +76,7 @@ actor ReloadService: Service {
         let config = try JSONDecoder().decode(ServerConfiguration.self, from: configData)
 
         var allowedUsers: [String: UserTier] = [:]
-        for usergroup in config.users {
+        for userGroup in config.users {
             for token in usergroup.tokens {
                 let tier = usergroup.tier
                 if let existingTier = allowedUsers[token],
